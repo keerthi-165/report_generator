@@ -10,7 +10,7 @@ DOMAIN:python programming
 
 BATCH DURATION: 15 march to 15 april 2025
 
-MENTOR:neela
+MENTOR:neela santhosh kumar
 
 Overview of the project.
 
