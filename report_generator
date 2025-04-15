@@ -1,0 +1,85 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from fpdf import FPDF
+
+
+# 1. Read Data from CSV
+def read_data(file_path):
+    data = pd.read_csv(file_path)
+    return data
+
+
+# 2. Analyze Data
+def analyze_data(data):
+    avg_score = data['Score'].mean()
+    top_scorer = data.loc[data['Score'].idxmax()]
+    return avg_score, top_scorer
+
+
+# 3. Generate Bar Chart
+def generate_chart(data):
+    plt.figure(figsize=(8, 5))
+    plt.bar(data['Name'], data['Score'], color='skyblue')
+    plt.title('Student Scores')
+    plt.xlabel('Students')
+    plt.ylabel('Scores')
+    plt.savefig('chart.png')  # Save chart as image
+    plt.close()
+
+
+# 4. Define PDF Layout
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Arial', 'B', 16)
+        self.cell(0, 10, 'Student Report', 0, 1, 'C')
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+
+    def chapter_title(self, title):
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, title, 0, 1, 'L')
+        self.ln(5)
+
+    def chapter_body(self, body):
+        self.set_font('Arial', '', 12)
+        self.multi_cell(0, 10, body)
+        self.ln()
+
+    def add_chart(self, image_path):
+        self.image(image_path, x=30, w=150)
+
+
+# 5. Generate PDF Report
+def generate_report(data, avg_score, top_scorer):
+    pdf = PDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+
+    pdf.chapter_title('Summary')
+    summary = (f'Total Students: {len(data)}\n'
+               f'Average Score: {avg_score:.2f}\n'
+               f'Top Scorer: {top_scorer["Name"]} ({top_scorer["Score"]})\n')
+    pdf.chapter_body(summary)
+
+    pdf.chapter_title('Detailed Scores')
+    for index, row in data.iterrows():
+        pdf.cell(0, 10, f'{row["Name"]}: {row["Score"]}', 0, 1)
+
+    pdf.ln(10)
+    pdf.chapter_title('Score Distribution')
+    pdf.add_chart('chart.png')
+
+    pdf.output('student_report.pdf')
+    print("PDF report generated successfully!")
+
+
+# 6. Main Function
+if  name == 'main':
+    file_path = 'data.csv'
+    data = read_data(file_path)
+    avg_score, top_scorer = analyze_data(data)
+    generate_chart(data)
+    generate_report(data, avg_score, top_scorer)
